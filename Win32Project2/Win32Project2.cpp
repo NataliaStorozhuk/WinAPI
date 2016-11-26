@@ -4,11 +4,7 @@
 #include "Win32Project2.h"
 #include <iostream>
 #include "Classes\Multinomial.h"
-#include <vector>
 #include <strsafe.h>
-
-
-using namespace std;
 
 #define MAX_LOADSTRING 100
 #define A0_BUTTON 1000
@@ -62,9 +58,9 @@ ATOM               MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK ChildProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
-vector<string> multToString();
-bool findMulty(Multinomial);
-void addToVector(Multinomial);
+//vector<string> multToString();
+//bool findMulty(Multinomial);
+//void addToVector(Multinomial);
 
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
@@ -328,7 +324,7 @@ LRESULT CALLBACK ChildProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 
 		combo2 = CreateWindow(L"combobox", NULL, WS_CHILD | WS_VISIBLE | WS_TABSTOP | CBS_AUTOHSCROLL | CBS_DROPDOWN | CBS_SORT,
 			20, 150, 350, 200, hWnd, (HMENU)ID_COMBO2, NULL, NULL);
-		vector<string> multystring = multToString();
+		vector<string> multystring = multToString(multy);
 		if (multystring.empty() != true)
 		{
 			for (int i = 0; i <= multystring.size() - 1; i++)
@@ -386,7 +382,7 @@ LRESULT CALLBACK ChildProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 
 				TCHAR  ListItem[256];
 				Multinomial plusresult = multy[ItemCombo1] + multy[ItemCombo2];
-				addToVector(plusresult);
+				addToVector(multy, plusresult, editresult1, combo1, combo2);
 
 			}
 			if (IsDlgButtonChecked(hWnd, ID_RADIOBTN2)) //Вычитание
@@ -394,7 +390,7 @@ LRESULT CALLBACK ChildProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 
 				TCHAR  ListItem[256];
 				Multinomial plusresult = multy[ItemCombo1] - multy[ItemCombo2];
-				addToVector(plusresult);
+				addToVector(multy, plusresult, editresult1, combo1, combo2);
 			}
 			if (IsDlgButtonChecked(hWnd, ID_RADIOBTN3)) //Деление
 			{
@@ -402,7 +398,7 @@ LRESULT CALLBACK ChildProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 				TCHAR  ListItem[256];
 				Multinomial plusresult = multy[ItemCombo1] * multy[ItemCombo2];
 				//проверка, нет ли такого уже в списках
-				addToVector(plusresult);
+				addToVector(multy, plusresult, editresult1, combo1, combo2);
 			}
 			if (IsDlgButtonChecked(hWnd, ID_RADIOBTN4)) //Умножение
 			{
@@ -421,7 +417,7 @@ LRESULT CALLBACK ChildProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 				}
 
 				Multinomial plusresult = main / multy[ItemCombo2];
-				addToVector(plusresult);
+				addToVector(multy, plusresult, editresult1, combo1, combo2);
 			}
 
 		}
@@ -434,7 +430,7 @@ LRESULT CALLBACK ChildProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 		if (LOWORD(wParam) == 1000)
 		{
 			DialogBoxParam((HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE), MAKEINTRESOURCE(IDD_DIALOGBAR), 0, (DlgProc), 0);
-			vector<string> multystring = multToString();
+			vector<string> multystring = multToString(multy);
 			SendMessageA(combo1, CB_RESETCONTENT, 0, 0);
 			SendMessageA(combo2, CB_RESETCONTENT, 0, 0);
 
@@ -591,47 +587,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
 	return 0;
-}
-
-vector<string> multToString()
-{
-	vector<string> strings;
-	for (int i = 0; i < multy.size(); ++i)
-	{
-		strings.push_back(multy[i].getToString());
-	}
-	return strings;
-}
-
-bool findMulty(Multinomial multyresult)
-{
-	bool tmp = 0;
-	string multystring = multyresult.getToString();
-	vector<string> multystrings = multToString();
-	for (int i = 0; i < multy.size(); ++i)
-	{
-		if (multystring == multystrings[i])
-			tmp = 1;
-	}
-	return tmp;
-}
-
-void addToVector(Multinomial plusresult)
-{
-	bool p = findMulty(plusresult);
-	if (p == 0)		multy.push_back(plusresult);
-	SendMessageA(editresult1, WM_SETTEXT, NULL, (LPARAM)(plusresult.getToString().c_str()));
-	SendMessageA(combo1, CB_RESETCONTENT, 0, 0);
-	SendMessageA(combo2, CB_RESETCONTENT, 0, 0);
-	vector<string> multystring = multToString();
-	if (multystring.empty() != true)
-	{
-		for (int i = 0; i <= multystring.size() - 1; i++)
-		{
-			SendMessageA(combo1, CB_ADDSTRING, 0, (LPARAM)multystring[i].c_str());
-			SendMessageA(combo2, CB_ADDSTRING, 0, (LPARAM)multystring[i].c_str());
-		}
-	}
 }
 
 
