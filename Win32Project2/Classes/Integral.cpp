@@ -3,6 +3,7 @@
 
 Multinomial Integral::differentiate(Multinomial & MN)
 {
+
 	return Multinomial();
 }
 
@@ -10,6 +11,10 @@ Multinomial Integral::differentiate(Multinomial & MN)
 Integral::Integral()
 {
 }
+
+/*Integral::Integral(int n, double _dMN[])
+{
+}*/
 
 Integral::~Integral()
 {

@@ -3,10 +3,11 @@
 
 class Integral : public Multinomial
 {
-	public: 
+public:
 
 	Multinomial differentiate(Multinomial & MN);
-	virtual double getIntegral(Multinomial & MN)=0;
+	virtual Multinomial getIntegral(/*Multinomial MN*/) = 0;
 	Integral();
+	Integral(int n, double _dMN[]) :Multinomial(n, _dMN) {};
 	~Integral();
 };
