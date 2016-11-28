@@ -1,17 +1,18 @@
 #pragma once
+#include "stdafx.h"
 #include "Multinomial.h"
 
- class Equation: Multinomial
- {
+class Equation : Multinomial
+{
 
- public:
+public:
 
-	 double p;
+	double p;
 
-	 double countInPoint();
-	 bool testInRoot();
-	 virtual double findRoot()= 0;
+	double countInPoint();
+	bool testInRoot();
+	virtual double findRoot() = 0;
 
-	 Equation();
-	 ~Equation();
- };
+	Equation(int n, double _dMN[]) :Multinomial(n, _dMN) {};
+	~Equation();
+};

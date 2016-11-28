@@ -1,12 +1,13 @@
 #pragma once
+#include "stdafx.h"
 #include "Equation.h"
 
-class Quadratic : public Equation 
+class Quadratic : public Equation
 {
 public:
 
-	Quadratic();
+	Quadratic(int n, double _dMN[]) : Equation(n, _dMN) {};
 	~Quadratic();
-	virtual double findRoot();
+	double findRoot() { return 0; };
 
 };

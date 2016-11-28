@@ -29,18 +29,6 @@ Multinomial::Multinomial()
 {
 }
 
-Multinomial::Multinomial(int n)
-{
-}
-
-void Multinomial::setMN(void)
-{
-}
-
-void Multinomial::getMN(void)
-{
-}
-
 Multinomial & Multinomial::operator=(const Multinomial & MN)
 {
 
@@ -78,7 +66,6 @@ Multinomial Multinomial::operator+(Multinomial & MN)
 		}
 	}
 	return Multinomial(n1 - 1, dmn);//возвращаем новый объект
-//	return Multinomial();
 }
 
 Multinomial Multinomial::operator-(Multinomial & MN)
@@ -136,7 +123,7 @@ Multinomial Multinomial::operator*(Multinomial & MN)
 	for (int i = 0; i < MN.n; i++)
 		M[i] = MN.dMN[i];
 
-	for (int i = 0; i <= n + m; i++)   //0 <=3+3 = 6
+	for (int i = 0; i <= n + m; i++)
 	{
 		for (int g = 0; g <= i; g++)
 		{
@@ -175,12 +162,7 @@ string Multinomial::getToString()
 	return result;
 }
 
-double Multinomial::value(double _x)
-{
-	return 0.0;
-}
-
-
+//http://www.cyberforum.ru/cpp-beginners/thread556071.html
 Multinomial Multinomial::operator /(Multinomial &ob)
 {
 
@@ -191,7 +173,7 @@ Multinomial Multinomial::operator /(Multinomial &ob)
 	Multinomial ob_2;
 	Multinomial ob_4;
 
-
+	//переворачиваем
 	Multinomial MN;
 	MN.n = ob.n - 1;
 	MN.dMN = new double[ob.n + 1];
@@ -200,7 +182,7 @@ Multinomial Multinomial::operator /(Multinomial &ob)
 		MN.dMN[ob.n - i - 1] = ob.dMN[i];
 	}
 
-
+	//считаем
 	temp.n = n - MN.n;
 	temp.dMN = new double[temp.n + 1];
 	memset(temp.dMN, 0, (temp.n + 1) * sizeof(double));
@@ -236,14 +218,9 @@ Multinomial Multinomial::operator /(Multinomial &ob)
 					ob_4.dMN[i] = ob_2.dMN[j];
 		}
 
-
-
 		mnojnik = ob_1.dMN[ob_1.n] / ob_4.dMN[ob_1.n];
-
 		temp.dMN[temp.n - k] = mnojnik;
 		k++;
-
-
 
 		for (int i = 0; i <= ob_1.n; i++)
 			ob_4.dMN[i] *= mnojnik;
@@ -256,13 +233,12 @@ Multinomial Multinomial::operator /(Multinomial &ob)
 
 	}
 
+	//переворачиваем как остальные
 	Multinomial tmp;
 	tmp.n = temp.n + 1;
 	tmp.dMN = new double[temp.n + 1];
 	for (int i = 0, j = temp.n; i <= tmp.n; i++, j--)
 		tmp.dMN[i] = temp.dMN[j];
-
-
 
 	return tmp;
 

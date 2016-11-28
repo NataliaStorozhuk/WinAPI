@@ -4,18 +4,19 @@
 #include "Win32Project2.h"
 #include <iostream>
 #include "Classes\Multinomial.h"
-#include <vector>
+#include "Classes\Integral.h"
+#include "Classes\Defintegral.h"
+#include "Classes\Unintegral.h"
+#include "Help.h"
 #include <strsafe.h>
-
-
-using namespace std;
 
 #define MAX_LOADSTRING 100
 #define A0_BUTTON 1000
 #define Label_1 2002
 
-#define result 2001
 #define addfirst 1000
+
+#define result 2001
 #define addsecond 1000
 #define back 2004
 #define exit 2005
@@ -29,42 +30,57 @@ using namespace std;
 #define ID_RADIOBTN2	3002
 #define ID_RADIOBTN3 	3003
 #define ID_RADIOBTN4	 3004
-
 #define ID_EDITRESULT1	4001
 #define ID_COMBO1 5001
 #define ID_COMBO2 5002
+
 #define ID_FIRSTCHILD	100
 #define ID_SECONDCHILD	101
 #define ID_THIRDCHILD	102
+
+#define ID_LIST1 6001
+#define ID_EDITTOP	4002
+#define ID_EDITBOTTOM	4003
+#define ID_EDITSTEP	4004
 
 #define ID_32770 32770
 #define ID_32771 32771
 #define ID_32772 32772
 
+#define ID_42000 42000
+#define ID_42001 42001
+#define ID_422002 42002
+
+
 // Глобальные переменные:
 HINSTANCE hInst;
 TCHAR WinName[] = _T("MainFrame");
-TCHAR ChildName[] = _T("Арифметические операции");
+TCHAR ChildName1[] = _T("Арифметические операции");
+TCHAR ChildName2[] = _T("Интегрирование");
+TCHAR ChildName3[] = _T("Поиск корней");
 WCHAR szTitle[MAX_LOADSTRING];                  // Текст строки заголовка
 WCHAR szWindowClass[MAX_LOADSTRING];            // имя класса главного окна
 static int number = 0;
 HWND clr_butns[100];
 HWND clr_labels[100];
 vector<Multinomial> multy;
-int ItemCombo1 = 0, ItemCombo2 = 0;
+int ItemCombo1 = 0, ItemCombo2 = 0, ItemList1 = 0;
 static HWND back1, result1, exit1, addFirst1, addSecond1,
 Label_addfirst1, Label_addsecond1, Label_choose1, Label_result1,
 radio1, radio2, radio3, radio4,
-editresult1, combo1, combo2;
+editresult1, edittop, editbottom, editstep,
+combo1, combo2,
+list1;
 
 // Отправить объявления функций, включенных в этот модуль кода:
 ATOM               MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
-LRESULT CALLBACK ChildProc(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK ChildProc1(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK ChildProc2(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK ChildProc3(HWND, UINT, WPARAM, LPARAM);
+//LRESULT CALLBACK ChildProc3(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
-vector<string> multToString();
-bool findMulty(Multinomial);
-void addToVector(Multinomial);
+
 
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
@@ -80,7 +96,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 	LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
 	LoadStringW(hInstance, IDC_WIN32PROJECT2, szWindowClass, MAX_LOADSTRING);
 
-	MyRegisterClass(hInstance);
+	int p = MyRegisterClass(hInstance);
 
 	// Выполнить инициализацию приложения:
 	if (!InitInstance(hInstance, nCmdShow))
@@ -128,8 +144,8 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 	WNDCLASSEXW wch;
 	wch.cbSize = sizeof(WNDCLASSEXW);
 	wch.hInstance = hInstance;
-	wch.lpszClassName = ChildName;
-	wch.lpfnWndProc = ChildProc;
+	wch.lpszClassName = ChildName1;
+	wch.lpfnWndProc = ChildProc1;
 	wch.style = CS_HREDRAW | CS_VREDRAW;
 	wch.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_WIN32PROJECT2));
 	wch.hCursor = LoadCursor(NULL, IDC_ARROW);
@@ -140,6 +156,38 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 	wch.hIconSm = LoadIcon(wch.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
 	if (!RegisterClassExW(&wch)) return -2;
+
+	WNDCLASSEXW wch2;
+	wch2.cbSize = sizeof(WNDCLASSEXW);
+	wch2.hInstance = hInstance;
+	wch2.lpszClassName = ChildName2;
+	wch2.lpfnWndProc = ChildProc2;
+	wch2.style = CS_HREDRAW | CS_VREDRAW;
+	wch2.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_WIN32PROJECT2));
+	wch2.hCursor = LoadCursor(NULL, IDC_ARROW);
+	wch2.lpszMenuName = MAKEINTRESOURCEW(IDR_MENU1);
+	wch2.cbClsExtra = 0;
+	wch2.cbWndExtra = 0;
+	wch2.hbrBackground = (HBRUSH)(COLOR_WINDOW);
+	wch2.hIconSm = LoadIcon(wch.hInstance, MAKEINTRESOURCE(IDI_SMALL));
+
+	if (!RegisterClassExW(&wch2)) return -3;
+
+	WNDCLASSEXW wch3;
+	wch3.cbSize = sizeof(WNDCLASSEXW);
+	wch3.hInstance = hInstance;
+	wch3.lpszClassName = ChildName3;
+	wch3.lpfnWndProc = ChildProc3;
+	wch3.style = CS_HREDRAW | CS_VREDRAW;
+	wch3.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_WIN32PROJECT2));
+	wch3.hCursor = LoadCursor(NULL, IDC_ARROW);
+	wch3.lpszMenuName = NULL;
+	wch3.cbClsExtra = 0;
+	wch3.cbWndExtra = 0;
+	wch3.hbrBackground = (HBRUSH)(COLOR_WINDOW);
+	wch3.hIconSm = LoadIcon(wch.hInstance, MAKEINTRESOURCE(IDI_SMALL));
+
+	if (!RegisterClassExW(&wch2)) return -4;
 
 }
 
@@ -171,7 +219,7 @@ BOOL CALLBACK DlgProcKof(HWND hwnd, UINT Message,
 	case WM_INITDIALOG:
 	{
 		int  IDS_BTNS[MAX_LOADSTRING];
-		for (int j = 0; j < number; j++) { //+1
+		for (int j = 0; j < number; j++) {
 			IDS_BTNS[j] = 1010 + j;
 		}
 
@@ -261,18 +309,13 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT Message,
 	return 0;
 }
 
-LRESULT CALLBACK ChildProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK ChildProc1(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {   // Обработчик сообщений
 	char item[150];
-/*	static HWND back1, result1, exit1, addFirst1, addSecond1,
-		Label_addfirst1, Label_addsecond1, Label_choose1, Label_result1,
-		radio1, radio2, radio3, radio4,
-		editresult1, combo1, combo2;*/
 	switch (message)
 	{
 	case WM_CREATE:
 	{
-
 		result1 = CreateWindow(
 			L"BUTTON", L"Результат", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 250, 270, 100, 30,
 			hWnd, (HMENU)result, (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE), NULL);
@@ -289,7 +332,7 @@ LRESULT CALLBACK ChildProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 			L"BUTTON", L"Выход", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 515, 320, 50, 30,
 			hWnd, (HMENU)exit, (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE), NULL);
 
-		Label_addfirst1 = CreateWindow(L"static", L"1. Добавьтепервый многочлен или выберите из списка", WS_CHILD | WS_VISIBLE | WS_TABSTOP,
+		Label_addfirst1 = CreateWindow(L"static", L"1. Добавьте первый многочлен или выберите из списка", WS_CHILD | WS_VISIBLE | WS_TABSTOP,
 			20, 30, 400, 30, hWnd, (HMENU)Label_addfirst, (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE), NULL);
 		Label_addsecond1 = CreateWindow(L"static", L"2. Добавьте второй многочлен или выберите из списка", WS_CHILD | WS_VISIBLE | WS_TABSTOP,
 			20, 110, 400, 30, hWnd, (HMENU)Label_addsecond, (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE), NULL);
@@ -322,13 +365,9 @@ LRESULT CALLBACK ChildProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 			WS_CHILD | WS_VISIBLE | WS_TABSTOP | CBS_AUTOHSCROLL | CBS_DROPDOWN | CBS_SORT,
 			20, 70, 350, 200, hWnd, (HMENU)ID_COMBO1, NULL, NULL);
 
-
-		/*	SendMessage(combo1, CB_SETCURSEL, 1, 0);
-			SendMessage(combo1, CB_SETEXTENDEDUI, 2, 0);*/
-
 		combo2 = CreateWindow(L"combobox", NULL, WS_CHILD | WS_VISIBLE | WS_TABSTOP | CBS_AUTOHSCROLL | CBS_DROPDOWN | CBS_SORT,
 			20, 150, 350, 200, hWnd, (HMENU)ID_COMBO2, NULL, NULL);
-		vector<string> multystring = multToString();
+		vector<string> multystring = multToString(multy);
 		if (multystring.empty() != true)
 		{
 			for (int i = 0; i <= multystring.size() - 1; i++)
@@ -348,80 +387,55 @@ LRESULT CALLBACK ChildProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 
 		hDC = BeginPaint(hWnd, &ps);
 		hMemDC = CreateCompatibleDC(hDC);
-		//	hbitmap = (HBITMAP)LoadImage(hInst, L"2.bmp", IMAGE_BITMAP, 600, 400, LR_LOADFROMFILE);
-	//		GetObject(hbitmap, sizeof(BITMAP), &bm);
-		//	SelectObject(hMemDC, hbitmap);
-		//	BitBlt(hDC, 0, 0, bm.bmWidth, bm.bmHeight, hMemDC, 0, 0, SRCCOPY);
 		DeleteDC(hMemDC);
 		ReleaseDC(hWnd, hDC);
-		//		DeleteObject(hbitmap);
 		EndPaint(hWnd, &ps);
 	}
 	break;
 	case WM_COMMAND:
 		if (HIWORD(wParam) == CBN_SELCHANGE)
-			// If the user makes a selection from the list:
-			//   Send CB_GETCURSEL message to get the index of the selected list item.
-			//   Send CB_GETLBTEXT message to get the item.
-			//   Display the item in a messagebox.
 		{
 			if (LOWORD(wParam) == ID_COMBO1)
 			{
 				ItemCombo1 = SendMessage((HWND)lParam, (UINT)CB_GETCURSEL,
 					(WPARAM)0, (LPARAM)0);
-				/*		TCHAR  ListItem[256];
-						(TCHAR)SendMessage((HWND)lParam, (UINT)CB_GETLBTEXT,
-							(WPARAM)ItemCombo1, (LPARAM)ListItem);
-						MessageBox(hWnd, (LPCWSTR)ListItem, TEXT("Item Selected"), MB_OK);*/
 			}
-
 			if (LOWORD(wParam) == ID_COMBO2)
 				ItemCombo2 = SendMessage((HWND)lParam, (UINT)CB_GETCURSEL,
 				(WPARAM)0, (LPARAM)0);
 		}
 		if (LOWORD(wParam) == result)
 		{
-			if (IsDlgButtonChecked(hWnd, ID_RADIOBTN1)) //Сложение
-			{
 
-				TCHAR  ListItem[256];
+			if (IsDlgButtonChecked(hWnd, ID_RADIOBTN1))
+			{
 				Multinomial plusresult = multy[ItemCombo1] + multy[ItemCombo2];
-				addToVector(plusresult);
-
+				addToVector(multy, plusresult, editresult1, combo1, combo2);
 			}
-			if (IsDlgButtonChecked(hWnd, ID_RADIOBTN2)) //Вычитание
-			{
 
-				TCHAR  ListItem[256];
+			if (IsDlgButtonChecked(hWnd, ID_RADIOBTN2))
+			{
 				Multinomial plusresult = multy[ItemCombo1] - multy[ItemCombo2];
-				addToVector(plusresult);
+				addToVector(multy, plusresult, editresult1, combo1, combo2);
 			}
-			if (IsDlgButtonChecked(hWnd, ID_RADIOBTN3)) //Деление
-			{
 
-				TCHAR  ListItem[256];
+			if (IsDlgButtonChecked(hWnd, ID_RADIOBTN3))
+			{
 				Multinomial plusresult = multy[ItemCombo1] * multy[ItemCombo2];
-				//проверка, нет ли такого уже в списках
-				addToVector(plusresult);
+				addToVector(multy, plusresult, editresult1, combo1, combo2);
 			}
-			if (IsDlgButtonChecked(hWnd, ID_RADIOBTN4)) //Умножение
-			{
-				TCHAR  ListItem[256];
 
-				//хуетень!
-				int e,t;
+			if (IsDlgButtonChecked(hWnd, ID_RADIOBTN4))
+			{
 				Multinomial main;
 				main.n = multy[ItemCombo1].n - 1;
 				main.dMN = new double[multy[ItemCombo1].n + 1];
 				for (int i = main.n; i >= 0; i--)
 				{
-					main.dMN[multy[ItemCombo1].n - i-1] = multy[ItemCombo1].dMN[i];
-							e = main.dMN[multy[ItemCombo1].n - i-1];
-							t = multy[ItemCombo1].n - i-1;
+					main.dMN[multy[ItemCombo1].n - i - 1] = multy[ItemCombo1].dMN[i];
 				}
-
 				Multinomial plusresult = main / multy[ItemCombo2];
-				addToVector(plusresult);
+				addToVector(multy, plusresult, editresult1, combo1, combo2);
 			}
 
 		}
@@ -434,7 +448,7 @@ LRESULT CALLBACK ChildProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 		if (LOWORD(wParam) == 1000)
 		{
 			DialogBoxParam((HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE), MAKEINTRESOURCE(IDD_DIALOGBAR), 0, (DlgProc), 0);
-			vector<string> multystring = multToString();
+			vector<string> multystring = multToString(multy);
 			SendMessageA(combo1, CB_RESETCONTENT, 0, 0);
 			SendMessageA(combo2, CB_RESETCONTENT, 0, 0);
 
@@ -446,10 +460,7 @@ LRESULT CALLBACK ChildProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 		}
 		switch (message)
 		{
-			/*	case addfirst:
-					{
-						DialogBoxParam((HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE), MAKEINTRESOURCE(IDD_DIALOGBAR), 0, (DlgProc), 0);
-					}*/
+
 		case ID_COMBO1:
 			if (HIWORD(wParam) == CBN_EDITCHANGE) {
 				GetWindowText(combo1, (LPWSTR)item, sizeof(item));
@@ -462,7 +473,7 @@ LRESULT CALLBACK ChildProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 					SetWindowText(combo1, L"");
 				}
 			}
-			//break;
+			break;
 		case ID_COMBO2:
 			if (HIWORD(wParam) == CBN_EDITCHANGE) {
 				GetWindowText(combo2, (LPWSTR)item, sizeof(item));
@@ -485,16 +496,338 @@ LRESULT CALLBACK ChildProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 	}
 }
 
-//
-//  ФУНКЦИЯ: WndProc(HWND, UINT, WPARAM, LPARAM)
-//
-//  НАЗНАЧЕНИЕ:  обрабатывает сообщения в главном окне.
-//
-//  WM_COMMAND — обработать меню приложения
-//  WM_PAINT — отрисовать главное окно
-//  WM_DESTROY — отправить сообщение о выходе и вернуться
-//
-//
+LRESULT CALLBACK ChildProc2(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	char item[150];
+	switch (message)
+	{
+	case WM_CREATE:
+	{
+
+		addFirst1 = CreateWindow(
+			L"BUTTON", L"+", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 390, 50, 30, 30,
+			hWnd, (HMENU)addfirst, (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE), NULL);
+		back1 = CreateWindow(
+			L"BUTTON", L"Назад", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 20, 300, 50, 30,
+			hWnd, (HMENU)back, (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE), NULL);
+		exit1 = CreateWindow(
+			L"BUTTON", L"Выход", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 515, 300, 50, 30,
+			hWnd, (HMENU)exit, (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE), NULL);
+
+		Label_addfirst1 = CreateWindow(L"static", L"1. Добавьте многочлен или выберите из списка", WS_CHILD | WS_VISIBLE | WS_TABSTOP,
+			20, 10, 400, 30, hWnd, (HMENU)Label_addfirst, (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE), NULL);
+		Label_addsecond1 = CreateWindow(L"static", L"2. Введите параметры справа при необходимости", WS_CHILD | WS_VISIBLE | WS_TABSTOP,
+			20, 220, 400, 30, hWnd, (HMENU)Label_addsecond, (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE), NULL);
+		Label_choose1 = CreateWindow(L"static", L"3. Выберите пунткт меню с необходимым действием", WS_CHILD | WS_VISIBLE | WS_TABSTOP,
+			20, 260, 400, 30, hWnd, (HMENU)Label_choose, (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE), NULL);
+
+		HWND hGrpButtons = CreateWindowEx(WS_EX_WINDOWEDGE,
+			L"BUTTON", L"", WS_VISIBLE | WS_CHILD | BS_GROUPBOX,  // Styles 
+			430, 50, 140, 200, hWnd, (HMENU)IDC_GRPBUTTONS, hInst, NULL);
+
+		Label_result1 = CreateWindow(L"static", L"Верхняя граница", WS_CHILD | WS_VISIBLE | WS_TABSTOP,
+			450, 90, 60, 40, hWnd, (HMENU)Label_choose, (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE), NULL);
+		edittop = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"0", BS_OWNERDRAW | WS_CHILD | WS_VISIBLE,
+			530, 95, 30, 20, hWnd, (HMENU)ID_EDITTOP, hInst, NULL);
+		Label_result1 = CreateWindow(L"static", L"Нижняя граница", WS_CHILD | WS_VISIBLE | WS_TABSTOP,
+			450, 150, 60, 40, hWnd, (HMENU)Label_choose, (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE), NULL);
+		editbottom = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"0", BS_OWNERDRAW | WS_CHILD | WS_VISIBLE,
+			530, 155, 30, 20, hWnd, (HMENU)ID_EDITBOTTOM, hInst, NULL);
+		Label_result1 = CreateWindow(L"static", L"Шаг интегрирования", WS_CHILD | WS_VISIBLE | WS_TABSTOP,
+			450, 210, 60, 20, hWnd, (HMENU)Label_choose, (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE), NULL);
+		editstep = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"0", BS_OWNERDRAW | WS_CHILD | WS_VISIBLE,
+			530, 210, 30, 20, hWnd, (HMENU)ID_EDITSTEP, hInst, NULL);
+
+		editresult1 = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"0", BS_OWNERDRAW | WS_CHILD | WS_VISIBLE,
+			80, 300, 430, 30, hWnd, (HMENU)ID_EDITRESULT1, hInst, NULL);
+
+		list1 = CreateWindow(L"listbox", NULL,
+			WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_HSCROLL | LBS_STANDARD | LBS_NOINTEGRALHEIGHT,
+			20, 50, 350, 150, hWnd, (HMENU)ID_LIST1, NULL, NULL);
+		SendMessage(list1, LB_SETHORIZONTALEXTENT, 350, 0);
+		vector<string> multystring = multToString(multy);
+		if (multystring.empty() != true)
+		{
+			for (int i = 0; i <= multystring.size() - 1; i++)
+			{
+				SendMessageA(list1, LB_ADDSTRING, 0, (LPARAM)multystring[i].c_str());
+			}
+		}
+	}
+
+	case WM_PAINT:
+	{
+		PAINTSTRUCT ps;
+		HBITMAP hbitmap;
+		BITMAP bm;
+		HDC hDC;
+		HDC hMemDC;
+
+		hDC = BeginPaint(hWnd, &ps);
+		hMemDC = CreateCompatibleDC(hDC);
+		DeleteDC(hMemDC);
+		ReleaseDC(hWnd, hDC);
+		EndPaint(hWnd, &ps);
+	}
+	break;
+
+	case WM_COMMAND:
+		if (HIWORD(wParam) == LBN_SELCHANGE)
+		{
+			ItemList1 = SendMessage((HWND)lParam, (UINT)LB_GETCURSEL,
+				(WPARAM)0, (LPARAM)0);
+		}
+
+		if (LOWORD(wParam) == 42000)
+		{
+			Unintegral unint = Unintegral(multy[ItemList1].n, multy[ItemList1].dMN);
+			Multinomial plusresult = unint.getIntegral(0, 0);
+			addTwoVector(multy, plusresult, editresult1, list1);
+		}
+
+		if (LOWORD(wParam) == 42001)
+		{
+			TCHAR  text_min[10], text_max[10];
+			Defintegral unint = Defintegral(multy[ItemList1].n, multy[ItemList1].dMN);
+
+			GetWindowText(edittop, text_max, 10);
+			GetWindowText(editbottom, text_min, 10);
+
+			LPTSTR endPtr;
+			double dValuemin = _tcstod(text_min, &endPtr);
+			double dValuemax = _tcstod(text_max, &endPtr);
+
+			Multinomial plusresult = unint.getIntegral(dValuemax, dValuemin);
+
+			char ChEdit[16] = { 0 };
+			sprintf_s(ChEdit, "%f", plusresult.n);
+			SendMessageA(editresult1, WM_SETTEXT, NULL, (LPARAM)ChEdit);
+		}
+
+		if (LOWORD(wParam) == 42002)
+		{
+			Unintegral unint = Unintegral(multy[ItemList1].n - 1, multy[ItemList1].dMN);
+			Multinomial plusresult = unint.differentiate();
+			addTwoVector(multy, plusresult, editresult1, list1);
+		}
+
+		if (LOWORD(wParam) == exit)
+		{
+			DestroyWindow(hWnd);
+			//	EnableWindow(hWnd,TRUE);
+		}
+		if (LOWORD(wParam) == 1000)
+		{
+			DialogBoxParam((HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE), MAKEINTRESOURCE(IDD_DIALOGBAR), 0, (DlgProc), 0);
+			vector<string> multystring = multToString(multy);
+			SendMessageA(combo1, CB_RESETCONTENT, 0, 0);
+			SendMessageA(combo2, CB_RESETCONTENT, 0, 0);
+
+			for (int i = 0; i <= multystring.size() - 1; i++)
+			{
+				SendMessageA(combo1, CB_ADDSTRING, 0, (LPARAM)multystring[i].c_str());
+				SendMessageA(combo2, CB_ADDSTRING, 0, (LPARAM)multystring[i].c_str());
+			}
+		}
+		switch (message)
+		{
+			break;
+		}
+		break;
+	case WM_DESTROY: PostQuitMessage(0);
+		break; // Завершение программы
+			   // Обработка сообщения по умолчанию
+	default: return DefWindowProc(hWnd, message, wParam, lParam);
+	}
+}
+
+LRESULT CALLBACK ChildProc3(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{   // Обработчик сообщений
+	char item[150];
+	switch (message)
+	{
+	case WM_CREATE:
+	{
+		result1 = CreateWindow(
+			L"BUTTON", L"Результат", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 250, 270, 100, 30,
+			hWnd, (HMENU)result, (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE), NULL);
+		addFirst1 = CreateWindow(
+			L"BUTTON", L"+", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 390, 70, 30, 30,
+			hWnd, (HMENU)addfirst, (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE), NULL);
+		addSecond1 = CreateWindow(
+			L"BUTTON", L"+", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 390, 150, 30, 30,
+			hWnd, (HMENU)addsecond, (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE), NULL);
+		back1 = CreateWindow(
+			L"BUTTON", L"Назад", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 20, 320, 50, 30,
+			hWnd, (HMENU)back, (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE), NULL);
+		exit1 = CreateWindow(
+			L"BUTTON", L"Выход", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 515, 320, 50, 30,
+			hWnd, (HMENU)exit, (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE), NULL);
+
+		Label_addfirst1 = CreateWindow(L"static", L"1. Добавьте первый многочлен или выберите из списка", WS_CHILD | WS_VISIBLE | WS_TABSTOP,
+			20, 30, 400, 30, hWnd, (HMENU)Label_addfirst, (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE), NULL);
+		Label_addsecond1 = CreateWindow(L"static", L"2. Добавьте второй многочлен или выберите из списка", WS_CHILD | WS_VISIBLE | WS_TABSTOP,
+			20, 110, 100, 30, hWnd, (HMENU)Label_addsecond, (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE), NULL);
+		Label_choose1 = CreateWindow(L"static", L"3. Выберите действие справа", WS_CHILD | WS_VISIBLE | WS_TABSTOP,
+			20, 190, 300, 30, hWnd, (HMENU)Label_choose, (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE), NULL);
+		Label_result1 = CreateWindow(L"static", L"4. Нажмите на результат", WS_CHILD | WS_VISIBLE | WS_TABSTOP,
+			20, 220, 300, 30, hWnd, (HMENU)Label_result, (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE), NULL);
+
+		HWND hGrpButtons = CreateWindowEx(WS_EX_WINDOWEDGE,
+			L"BUTTON", L"", WS_VISIBLE | WS_CHILD | BS_GROUPBOX,  // Styles 
+			430, 10, 140, 300, hWnd, (HMENU)IDC_GRPBUTTONS, hInst, NULL);
+
+		radio1 = CreateWindowExW(WS_EX_TRANSPARENT, L"BUTTON", L"ПУП",
+			WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON | WS_GROUP,
+			450, 50, 100, 20, hWnd, (HMENU)ID_RADIOBTN1, GetModuleHandle(NULL), 0);
+		radio2 = CreateWindowExW(WS_EX_TRANSPARENT, L"BUTTON", L"Вычитание",
+			WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON,
+			450, 120, 100, 20, hWnd, (HMENU)ID_RADIOBTN2, GetModuleHandle(NULL), 0);
+		radio3 = CreateWindowExW(WS_EX_TRANSPARENT, L"BUTTON", L"Умножение",
+			WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON,
+			450, 190, 100, 20, hWnd, (HMENU)ID_RADIOBTN3, GetModuleHandle(NULL), 0);
+		radio4 = CreateWindowExW(WS_EX_TRANSPARENT, L"BUTTON", L"Деление",
+			WS_CHILD | WS_VISIBLE | BS_AUTORADIOBUTTON,
+			450, 260, 100, 20, hWnd, (HMENU)ID_RADIOBTN4, GetModuleHandle(NULL), 0);
+
+		editresult1 = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"0", BS_OWNERDRAW | WS_CHILD | WS_VISIBLE,
+			80, 320, 430, 30, hWnd, (HMENU)ID_EDITRESULT1, hInst, NULL);
+
+		combo1 = CreateWindow(L"combobox", NULL,
+			WS_CHILD | WS_VISIBLE | WS_TABSTOP | CBS_AUTOHSCROLL | CBS_DROPDOWN | CBS_SORT,
+			20, 70, 350, 200, hWnd, (HMENU)ID_COMBO1, NULL, NULL);
+
+		combo2 = CreateWindow(L"combobox", NULL, WS_CHILD | WS_VISIBLE | WS_TABSTOP | CBS_AUTOHSCROLL | CBS_DROPDOWN | CBS_SORT,
+			20, 150, 350, 200, hWnd, (HMENU)ID_COMBO2, NULL, NULL);
+		vector<string> multystring = multToString(multy);
+		if (multystring.empty() != true)
+		{
+			for (int i = 0; i <= multystring.size() - 1; i++)
+			{
+				SendMessageA(combo1, CB_ADDSTRING, 0, (LPARAM)multystring[i].c_str());
+				SendMessageA(combo2, CB_ADDSTRING, 0, (LPARAM)multystring[i].c_str());
+			}
+		}
+	}
+	case WM_PAINT:
+	{
+		PAINTSTRUCT ps;
+		HBITMAP hbitmap;
+		BITMAP bm;
+		HDC hDC;
+		HDC hMemDC;
+
+		hDC = BeginPaint(hWnd, &ps);
+		hMemDC = CreateCompatibleDC(hDC);
+		DeleteDC(hMemDC);
+		ReleaseDC(hWnd, hDC);
+		EndPaint(hWnd, &ps);
+	}
+	break;
+	case WM_COMMAND:
+		if (HIWORD(wParam) == CBN_SELCHANGE)
+		{
+			if (LOWORD(wParam) == ID_COMBO1)
+			{
+				ItemCombo1 = SendMessage((HWND)lParam, (UINT)CB_GETCURSEL,
+					(WPARAM)0, (LPARAM)0);
+			}
+			if (LOWORD(wParam) == ID_COMBO2)
+				ItemCombo2 = SendMessage((HWND)lParam, (UINT)CB_GETCURSEL,
+				(WPARAM)0, (LPARAM)0);
+		}
+		if (LOWORD(wParam) == result)
+		{
+
+			if (IsDlgButtonChecked(hWnd, ID_RADIOBTN1))
+			{
+				Multinomial plusresult = multy[ItemCombo1] + multy[ItemCombo2];
+				addToVector(multy, plusresult, editresult1, combo1, combo2);
+			}
+
+			if (IsDlgButtonChecked(hWnd, ID_RADIOBTN2))
+			{
+				Multinomial plusresult = multy[ItemCombo1] - multy[ItemCombo2];
+				addToVector(multy, plusresult, editresult1, combo1, combo2);
+			}
+
+			if (IsDlgButtonChecked(hWnd, ID_RADIOBTN3))
+			{
+				Multinomial plusresult = multy[ItemCombo1] * multy[ItemCombo2];
+				addToVector(multy, plusresult, editresult1, combo1, combo2);
+			}
+
+			if (IsDlgButtonChecked(hWnd, ID_RADIOBTN4))
+			{
+				Multinomial main;
+				main.n = multy[ItemCombo1].n - 1;
+				main.dMN = new double[multy[ItemCombo1].n + 1];
+				for (int i = main.n; i >= 0; i--)
+				{
+					main.dMN[multy[ItemCombo1].n - i - 1] = multy[ItemCombo1].dMN[i];
+				}
+				Multinomial plusresult = main / multy[ItemCombo2];
+				addToVector(multy, plusresult, editresult1, combo1, combo2);
+			}
+
+		}
+
+		if (LOWORD(wParam) == exit)
+		{
+			DestroyWindow(hWnd);
+			//	EnableWindow(hWnd,TRUE);
+		}
+		if (LOWORD(wParam) == 1000)
+		{
+			DialogBoxParam((HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE), MAKEINTRESOURCE(IDD_DIALOGBAR), 0, (DlgProc), 0);
+			vector<string> multystring = multToString(multy);
+			SendMessageA(combo1, CB_RESETCONTENT, 0, 0);
+			SendMessageA(combo2, CB_RESETCONTENT, 0, 0);
+
+			for (int i = 0; i <= multystring.size() - 1; i++)
+			{
+				SendMessageA(combo1, CB_ADDSTRING, 0, (LPARAM)multystring[i].c_str());
+				SendMessageA(combo2, CB_ADDSTRING, 0, (LPARAM)multystring[i].c_str());
+			}
+		}
+		switch (message)
+		{
+
+		case ID_COMBO1:
+			if (HIWORD(wParam) == CBN_EDITCHANGE) {
+				GetWindowText(combo1, (LPWSTR)item, sizeof(item));
+				SetWindowText(hWnd, (LPWSTR)item);
+			}
+			if (HIWORD(wParam) == CBN_KILLFOCUS) {
+				GetWindowText(combo1, (LPWSTR)item, sizeof(item));
+				if (SendMessage(combo1, CB_FINDSTRINGEXACT, 0, (LPARAM)item) == CB_ERR) {
+					SendMessage(combo1, CB_ADDSTRING, 0, (LPARAM)item);
+					SetWindowText(combo1, L"");
+				}
+			}
+			break;
+		case ID_COMBO2:
+			if (HIWORD(wParam) == CBN_EDITCHANGE) {
+				GetWindowText(combo2, (LPWSTR)item, sizeof(item));
+				SetWindowText(hWnd, (LPWSTR)item);
+			}
+			if (HIWORD(wParam) == CBN_KILLFOCUS) {
+				GetWindowText(combo2, (LPWSTR)item, sizeof(item));
+				if (SendMessage(combo2, CB_FINDSTRINGEXACT, 0, (LPARAM)item) == CB_ERR) {
+					SendMessage(combo2, CB_ADDSTRING, 0, (LPARAM)item);
+					SetWindowText(combo2, L"");
+				}
+			}
+			break;
+		}
+		break;
+	case WM_DESTROY: PostQuitMessage(0);
+		break; // Завершение программы
+			   // Обработка сообщения по умолчанию
+	default: return DefWindowProc(hWnd, message, wParam, lParam);
+	}
+}
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	static HWND NewMult, tmp;
@@ -517,7 +850,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		multy.push_back(Multinomial(3, d));
 		double e[4] = { -3,-2,-1,0 };
 		multy.push_back(Multinomial(3, e));
+		double q[4] = { -2,-2,-1,0 };
+		multy.push_back(Multinomial(3, q));
+		double z[4] = { 12,-2,-1,0 };
+		multy.push_back(Multinomial(3, z));
+
 	}
+
 	case WM_COMMAND:
 	{
 
@@ -527,14 +866,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		//	break;
 		int wmId = LOWORD(wParam);
-		// Разобрать выбор в меню:
+
 		switch (wmId)
 		{
 
 		case ID_32770:
 		{
-
-			HWND childHwnd = CreateWindow(ChildName, ChildName, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 150, 150, 600, 400, hWnd, 0, hInst, 0);
+			HWND childHwnd = CreateWindow(ChildName1, ChildName1, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 150, 150, 600, 400, hWnd, 0, hInst, 0);
 			if (!childHwnd)
 			{
 				return FALSE;
@@ -543,16 +881,31 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			return TRUE;
 		}
 		break;
+
 		case ID_32771:
 		{
-			MessageBox(hWnd, L"Я - второй пункт меню!", L"kol-vo", MB_OK);
+			HWND childHwnd3 = CreateWindowEx(0, ChildName3, (LPCTSTR)NULL, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 150, 150, 600, 400, hWnd, 0, hInst, 0);
+			if (!childHwnd3)
+			{
+				return FALSE;
+			}
+			EnableWindow(hWnd, FALSE);
+			return TRUE;
 		}
 		break;
+
 		case ID_32772:
 		{
-			MessageBox(hWnd, L"Я - третий пункт меню!", L"kol-vo", MB_OK);
+			HWND childHwnd2 = CreateWindowEx(0, ChildName2, (LPCTSTR)NULL, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 150, 150, 600, 400, hWnd, 0, hInst, 0);
+			if (!childHwnd2)
+			{
+				return FALSE;
+			}
+			EnableWindow(hWnd, FALSE);
+			return TRUE;
 		}
 		break;
+
 		case IDM_ABOUT:
 			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
 			break;
@@ -592,48 +945,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	}
 	return 0;
 }
-
-vector<string> multToString()
-{
-	vector<string> strings;
-	for (int i = 0; i < multy.size(); ++i)
-	{
-		strings.push_back(multy[i].getToString());
-	}
-	return strings;
-}
-
-bool findMulty(Multinomial multyresult)
-{
-	bool tmp = 0;
-	string multystring = multyresult.getToString();
-	vector<string> multystrings = multToString();
-	for (int i = 0; i < multy.size(); ++i)
-	{
-		if (multystring == multystrings[i])
-			tmp = 1;
-	}
-	return tmp;
-}
-
-void addToVector(Multinomial plusresult)
-{
-	bool p = findMulty(plusresult);
-	if (p == 0)		multy.push_back(plusresult);
-	SendMessageA(editresult1, WM_SETTEXT, NULL, (LPARAM)(plusresult.getToString().c_str()));
-	SendMessageA(combo1, CB_RESETCONTENT, 0, 0);
-	SendMessageA(combo2, CB_RESETCONTENT, 0, 0);
-	vector<string> multystring = multToString();
-	if (multystring.empty() != true)
-	{
-		for (int i = 0; i <= multystring.size() - 1; i++)
-		{
-			SendMessageA(combo1, CB_ADDSTRING, 0, (LPARAM)multystring[i].c_str());
-			SendMessageA(combo2, CB_ADDSTRING, 0, (LPARAM)multystring[i].c_str());
-		}
-	}
-}
-
 
 // Обработчик сообщений для окна "О программе".
 INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)

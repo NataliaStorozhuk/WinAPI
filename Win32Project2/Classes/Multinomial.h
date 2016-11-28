@@ -1,18 +1,19 @@
 #pragma once
+#include "stdafx.h"
 #include <string>
 using namespace std;
 
 class Multinomial {
 
-	
-
 public:
 	int n;
+
 	double *dMN;
-	///		int arg, n, i, power, p, array[], km;
+
 	Multinomial(int _n, double _dMN[]);
 
 	~Multinomial();
+
 	Multinomial();
 
 	Multinomial(int n);
@@ -28,14 +29,11 @@ public:
 	Multinomial operator-(Multinomial & MN);
 
 	Multinomial operator*(Multinomial & MN);
+
 	Multinomial operator/(Multinomial & MN);
-
-	Multinomial back(Multinomial & MN);
-
-	//Multinomial back();
 
 	string getToString();
 
 	double value(double _x);
-	
+
 };

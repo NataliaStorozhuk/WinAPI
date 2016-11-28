@@ -1,12 +1,14 @@
 #pragma once
+#include "stdafx.h"
 #include "Multinomial.h" 
 
 class Integral : public Multinomial
 {
-	public: 
+public:
 
-	Multinomial differentiate(Multinomial & MN);
-	virtual double getIntegral(Multinomial & MN)=0;
+	Multinomial differentiate();
+	virtual Multinomial getIntegral(double min, double max) = 0;
 	Integral();
+	Integral(int n, double _dMN[]) :Multinomial(n, _dMN) {};
 	~Integral();
 };
